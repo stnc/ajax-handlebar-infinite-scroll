@@ -60,18 +60,17 @@
         $(document).ready(function() {
             setupHandlebars();
             windowOnScroll();
+			getMoreDataALL();
         });
 
         function windowOnScroll() {
 
-
-
-
             $(window).scroll(function() {
                 if ($(window).scrollTop() + $(window).height() >= $(document).height()) {
+					alert("lll")
                     if ($(".post-item").length < $("#total_count").val()) {
                         var lastId = $(".post-item:last").attr("id");
-                        // alert (lastId)
+                        alert (lastId)
                         getMoreData(lastId);
                     }
                 }
@@ -107,11 +106,14 @@
                                     content: datum.content
 
                                 };
-                                var card = "<div class='card'>";
+                      /*          var card = "<div class='card'>";
                                 card += template(context);
                                 card += "</div>";
-
-                                $(".result").append(card);
+*/
+								
+                                var card = template(context);
+								
+                                $(".result .post-wall").append(card);
                                 counter++;
                                 updateCounter();
 
@@ -126,54 +128,89 @@
                 }
             });
         }
+		
+		
+        function getMoreDataALL() {
+            $(window).off("scroll");
+            $.ajax({
+                url: "getMoreDataAll.php",
+                type: "get",
+                dataType: "json",
+
+                beforeSend: function() {
+                    $('.ajax-loader').show();
+                },
+                success: function(data) {
+                    setTimeout(function() {
+                        $('.ajax-loader').hide();
+
+                         console.log(data.results)
+                        console.log(data.results.length)
+                        if (data.results) {
+                    
+
+                            for (var i = 0; i < data.results.length; i++) {
+                                var datum = data.results[i];
+                                var context = {
+
+                                    id: datum.id,
+                                    title: datum.title,
+                                    content: datum.content
+
+                                };
+                      /*          var card = "<div class='card'>";
+                                card += template(context);
+                                card += "</div>";
+*/
+								
+                                var card = template(context);
+								
+                                $(".result .post-wall").append(card);
+                                counter++;
+                                updateCounter();
+
+                            }
+                        }
+
+
+
+
+                        windowOnScroll();
+                    }, 1000);
+                }
+            });
+        }
+		
+		
+		
     </script>
+	
+	
+	
 </head>
 
 <body>
 
     </div>
+            <input type="hidden" name="total_count" id="total_count" value="70"/>
 
     <div class="result">    <div class="post-wall">
-        <div id="post-list">
-            <?php
-            require_once('db.php');
-            $sqlQuery = "SELECT * FROM tbl_posts";
-            $result = mysqli_query($conn, $sqlQuery);
-            $total_count = mysqli_num_rows($result);
-
-            $sqlQuery = "SELECT * FROM tbl_posts ORDER BY id desc LIMIT 7";
-            $result = mysqli_query($conn, $sqlQuery);
-            ?>
-            <input type="hidden" name="total_count" id="total_count" value="<?php echo $total_count; ?>" />
-
-            <?php
-            while ($row = mysqli_fetch_assoc($result)) {
-                $content = substr($row['content'], 0, 100);
-            ?>
-                <div class="post-item" id="<?php echo $row['id']; ?>">
-                    <p class="post-title"><?php echo $row['title']; ?></p>
-                    <p><?php echo $content; ?></p>
-                </div>
-            <?php
-            }
-            ?>
-        </div>
+    
 
     </div>
-        <div class="loading">loading..</div>
     </div>
 
     <script id="person-template" type="text/x-handlebars-template">
-        <div class="entry">
-    <div class='person'>
+           <div class="post-list">
 
-      <div class='info post-item' id="{{id}}">
-        <p>{{title}} </p>
+
+      <div class=' post-item' id="{{id}}">
+                    <p class="post-title">{{title}}</p>
         <p>{{content}} </p>
   
       </div>
     </div>
-  </div>
+  
 </script>
 
     <div class="ajax-loader text-center">
